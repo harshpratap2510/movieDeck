@@ -33,8 +33,7 @@ const bannerHome = () => {
 
    return ()=> clearInterval(interval)
     
-  },  [BannerData,imageData ,currentImage
-  ])
+  },  [BannerData,imageData ,currentImage])
   
 
   return (

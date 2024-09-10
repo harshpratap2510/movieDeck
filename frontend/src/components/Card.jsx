@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom'
 
 
 const Card = ({data,index, trending,media_type}) => {
+
+ 
    
   const imageData = useSelector(state => state.movieData.imageURL)
   

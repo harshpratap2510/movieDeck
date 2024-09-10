@@ -1,11 +1,13 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import useFetchDetail from '../hooks/useFetchDetails'
 import useFetch from '../hooks/useFetch'
 import { useSelector } from 'react-redux'
 import moment from 'moment'
 import Divider from '../components/Divider'
+import { useState } from 'react'
 import HorizontalScrollCard from '../components/horizontalScrollCard'
+import VideoPlay from '../components/videoPlay'
 import useSimilarMovie from '../hooks/useSimilarMovie'
 
 const DetailPage = () => {
@@ -14,8 +16,10 @@ const DetailPage = () => {
 
   const { data } = useFetchDetail(`/${params?.explore}/${params?.id}`)
   const { data: castData } = useFetchDetail(`/${params?.explore}/${params?.id}/credits`)
-  const {data : similarMovieData} = useFetch(`/${params?.explore}/${params?.id}/similar`)
-  const { data : recommendationData } = useFetch(`/${params?.explore}/${params?.id}/recommendations`)
+  const { data: similarMovieData } = useFetch(`/${params?.explore}/${params?.id}/similar`)
+  const { data: recommendationData } = useFetch(`/${params?.explore}/${params?.id}/recommendations`)
+  const [playVideo, setplayVideo] = useState(false)
+  const [playVideoId, setplayVideoId] = useState()
 
   const writer = castData?.crew?.filter(el => el?.job === "Writer")?.map(el => el?.name)?.join(", ")
 
@@ -24,6 +28,11 @@ const DetailPage = () => {
   console.log("star cast", castData)
   console.log("similar", similarMovieData)
 
+  const handlePlayVideo = (data)=>{
+    setplayVideoId(data)
+    setplayVideo(true)
+  }
+ 
   return (
     <div>
 
@@ -31,7 +40,9 @@ const DetailPage = () => {
         <div className='w-full h-full'>
           <img src={imageData + data?.backdrop_path} alt=""
             className=' w-full h-full object-cover' />
+
         </div>
+
         <div className='absolute w-full top-0 h-full bg-gradient-to-b from-neutral-900/80 to-transparent'></div>
       </div>
 
@@ -39,6 +50,8 @@ const DetailPage = () => {
         <div className='lg:-mt-28 md:-mt-28 relative mx-auto lg:mx-0 w-fit min-w-60'>
           <img src={imageData + data?.poster_path} alt=""
             className=' w-60 h-80 object-cover rounded ' />
+
+          <button onClick={()=>handlePlayVideo(data)} className='mt-3 w-full py-2 px-4 text-center bg-white text-black rounded font-bold text-lg hover:bg-gradient-to-l from-red-500 to-orange-500 hover:scale-105 transition-all'>Play now</button>
         </div>
 
         <div >
@@ -71,48 +84,46 @@ const DetailPage = () => {
           <Divider />
 
           <div>
-          <p><span className='text-white'>Director :</span> {castData?.crew[0]?.name} </p>
+            <p><span className='text-white'>Director :</span> {castData?.crew[0]?.name} </p>
+            <Divider />
+            <p>
+              <span className='text-white'>Writer : {writer}</span>
+            </p>
+          </div>
+
           <Divider />
-          <p>
-            <span className='text-white'>Writer : {writer}</span>
-          </p>
-        </div>
 
-        <Divider />
-
-        <h2 className='font-bold text-lg '>Cast :</h2>
-        <div className='grid grid-cols-[repeat(auto-fit,96px)] justify-center gap-8 my-4'>
-        {
-            castData?.cast?.filter(el => el?.profile_path).map((starCast, index) => {
-              return (
-                <div>
-                  <div>
-                    <img
-                      src={imageData + starCast?.profile_path}
-                      className='w-24 h-24 object-cover rounded-full'
-                    />
+          <h2 className='font-bold text-lg '>Cast :</h2>
+          <div className='grid grid-cols-[repeat(auto-fit,96px)] justify-center gap-8 my-4'>
+            {
+              castData?.cast?.filter(el => el?.profile_path).map((starCast, index) => {
+                return (
+                  <div key={starCast.id}>
+                    <div>
+                      <img
+                        src={imageData + starCast?.profile_path}
+                        className='w-24 h-24 object-cover rounded-full'
+                      />
+                    </div>
+                    <p className='font-bold text-center text-sm text-neutral-400'>{starCast?.name}</p>
                   </div>
-                  <p className='font-bold text-center text-sm text-neutral-400'>{starCast?.name}</p>
-                </div>
-              )
-            })
-          }
-        </div> 
-       
-
-
-
-
+                )
+              })
+            }
+          </div>
         </div>
-
-     
-    </div>
-
-      <div>
-        <HorizontalScrollCard data={similarMovieData} heading={`Similar ${params?.explore}` } media_type= {params?.explore} />
-        <HorizontalScrollCard data={recommendationData} heading={"Recommendation "+params?.explore} media_type={params?.explore}/>
       </div>
 
+      <div>
+        <HorizontalScrollCard data={similarMovieData} heading={`Similar ${params?.explore}`} media_type={params?.explore} />
+        <HorizontalScrollCard data={recommendationData} heading={"Recommendation " + params?.explore} media_type={params?.explore} />
+      </div>
+              {
+                playVideo && (
+                  <VideoPlay data = {playVideoId} close={()=>setplayVideo(false)} media_type={params?.explore} />
+                )
+              }
+         
     </div >
   )
 }
